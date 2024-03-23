@@ -1,0 +1,11 @@
+.options-container {
+  padding: 10px 0;
+}
+
+.options-btn {
+  margin-right: 5px;
+}
+
+.is-hiden {
+  display: none;
+}

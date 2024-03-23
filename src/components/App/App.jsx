@@ -1,23 +1,64 @@
-import Profile from "../Profile/Profile.jsx";
-import FriendList from "../FriendList/FriendList.jsx";
-import TransactionHistory from "../TransactionHistory/TransactionHistory.jsx";
+import { useState, useEffect } from "react";
 import css from "./App.module.css";
-import userData from "./userData.json";
-import friends from "./friends.json";
-import transactions from "./transactions.json";
+import Description from "../Description/Description.jsx";
+import Options from "../Options/Options.jsx";
+import Feedback from "../Feedback/Feedback";
+import Notification from "../Notification/Notification";
 
 const App = () => {
+  const [options, setOptions] = useState(() => {
+    const localStorageData = window.localStorage.getItem("options");
+    return localStorageData
+      ? JSON.parse(localStorageData)
+      : { good: 0, neutral: 0, bad: 0 };
+  });
+  const totalFeedback = options.good + options.neutral + options.bad;
+  const positiveFeedback =
+    Math.round((options.good / totalFeedback) * 100) || 0;
+
+  useEffect(() => {
+    window.localStorage.setItem("options", JSON.stringify(options));
+  }, [options]);
+
+  const updateFeedback = (feedbackType) => {
+    if (feedbackType === "good") {
+      setOptions({
+        ...options,
+        good: options.good + 1,
+      });
+    } else if (feedbackType === "bad") {
+      setOptions({
+        ...options,
+        bad: options.bad + 1,
+      });
+    } else if (feedbackType === "neutral") {
+      setOptions({
+        ...options,
+        neutral: options.neutral + 1,
+      });
+    } else if (feedbackType === "reset") {
+      setOptions({
+        good: 0,
+        neutral: 0,
+        bad: 0,
+      });
+    }
+  };
+
   return (
     <div className={css.container}>
-      <Profile
-        name={userData.username}
-        tag={userData.tag}
-        location={userData.location}
-        image={userData.avatar}
-        stats={userData.stats}
-      />
-      <FriendList friends={friends} />
-      <TransactionHistory items={transactions} />
+      <Description />
+      <Options updateFeedback={updateFeedback} totalFeedback={totalFeedback} />
+      {totalFeedback > 0 && (
+        <Feedback
+          good={options.good}
+          neutral={options.neutral}
+          bad={options.bad}
+          totalFeedback={totalFeedback}
+          positiveFeedback={positiveFeedback}
+        />
+      )}
+      {totalFeedback === 0 && <Notification />}
     </div>
   );
 };
